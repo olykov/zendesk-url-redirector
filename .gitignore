@@ -1,0 +1,46 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build artifacts
+**/.next/
+**/dist/
+**/.turbo/
+**/tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# env / secrets — only `.env.example` is committed
+.env
+.env.local
+.env.*.local
+.env_old
+.env_todelete
+.env.bak
+
+# legacy SQLite
+**/data/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# logs / coverage
+*.log
+npm-debug.log*
+pnpm-debug.log*
+coverage/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# misc
+.cache/
+
+# Override common global gitignore patterns (e.g. `~/.gitignore_global`
+# inherited from Python templates) that would otherwise block our source.
+!apps/frontend/src/lib/
+!apps/frontend/src/lib/**

@@ -1,0 +1,52 @@
+# --- dependencies (rebuilt inside the image) ---
+**/node_modules
+**/.pnpm-store
+
+# --- build artifacts (rebuilt inside the image) ---
+**/.next
+**/dist
+**/.turbo
+**/coverage
+**/*.tsbuildinfo
+
+# --- env / secrets — never bake credentials into the image ---
+# Catches .env, .env.local, .env.production, .env.example, etc. Runtime values
+# come from `env_file:` in compose or the orchestrator.
+**/.env
+**/.env.*
+**/.env_old
+**/.env_todelete
+
+# --- legacy SQLite files ---
+**/data
+**/*.sqlite
+**/*.sqlite-journal
+**/*.sqlite-wal
+**/*.sqlite-shm
+
+# --- OS / IDE / editor scratch ---
+.DS_Store
+**/.DS_Store
+.vscode
+.idea
+*.swp
+*.swo
+
+# --- git / CI metadata (not needed at runtime) ---
+.git
+.gitignore
+.github
+
+# --- docs / repo housekeeping (not needed at runtime) ---
+README.md
+LICENSE
+docker-compose.yml
+docker-compose.*.yml
+
+# --- logs / tmp ---
+*.log
+npm-debug.log*
+pnpm-debug.log*
+.cache
+tmp
+.tmp

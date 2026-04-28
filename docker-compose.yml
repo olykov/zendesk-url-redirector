@@ -1,0 +1,64 @@
+name: redirector
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-redirector}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-redirector}
+      POSTGRES_DB: ${POSTGRES_DB:-redirector}
+    volumes:
+      - redirector_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-redirector} -d ${POSTGRES_DB:-redirector}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-redirector}:${POSTGRES_PASSWORD:-redirector}@postgres:5432/${POSTGRES_DB:-redirector}
+      HOST: 0.0.0.0
+      PORT: 4000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "4000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_HELP_CENTER_URL: ${NEXT_PUBLIC_HELP_CENTER_URL:-}
+        NEXT_PUBLIC_INSTANCE_LABEL: ${NEXT_PUBLIC_INSTANCE_LABEL:-}
+        NEXT_PUBLIC_OPENID_BUTTON_LABEL: ${NEXT_PUBLIC_OPENID_BUTTON_LABEL:-}
+        INTERNAL_API_URL: http://backend:4000
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      INTERNAL_API_URL: http://backend:4000
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+volumes:
+  redirector_pgdata:
